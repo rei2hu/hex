@@ -1,0 +1,6 @@
+.stack-work/
+hex.cabal
+*~
+.vscode
+*.code-workspace
+*.lock
