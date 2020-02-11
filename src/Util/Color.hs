@@ -12,7 +12,7 @@ cmykToColor c = let (r, g, b, a) = cmykToRgba c
 
 cmykToRgba :: Cmyk -> (Float, Float, Float, Float)
 cmykToRgba (c, m, y, k) = let nk = (1 - k)
-                         in ((1 - c) * nk, (1 - m) * nk, (1 - y) * nk, 1)
+                          in ((1 - c) * nk, (1 - m) * nk, (1 - y) * nk, 1)
 
 rgbaToCmyk :: (Float, Float, Float, Float) -> Cmyk
 rgbaToCmyk (r, g, b, _) = (1 - r, 1 - g, 1 - b, 0)

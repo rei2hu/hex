@@ -11,7 +11,7 @@ shapeWidth = 2 * shapeSize
 padding = 1 + 2 / shapeSize
 
 selectorSize :: Float
-selectorSize = 32
+selectorSize = 31
 
 -- returns a path which draws a hexagon centered at given coordinates
 -- when traced
