@@ -23,3 +23,9 @@ movePlayer 's' (Game p t) = Game (moveY (-1) p) t
 movePlayer 'a' (Game p t) = Game (moveX (-1) p) t
 movePlayer 'd' (Game p t) = Game (moveX 1 p) t
 movePlayer _ g = g
+
+revealTile :: OffsetCoords -> Game -> Game
+revealTile c (Game p ts) = Game p $ Tile.tileAt c ts
+
+advance :: Float -> Game -> Game
+advance steps (Game p ts) = Game p $ Map.map (\t -> if Tile.hasDarkNghbr t ts then Tile.darken steps t else t) ts
