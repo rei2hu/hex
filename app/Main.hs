@@ -1,6 +1,7 @@
 module Main where
 
 import Graphics.Hexagon
+import Graphics.Numbers
 import State.Game
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
@@ -15,7 +16,8 @@ drawing g = let positions = getTiles g
                 tiles = map (\(co, c) -> (color c . polygon . hexagonAt) co) positions
                 outlines = map (\(co, _) -> (color white . line . outlineAt) co) positions
                 player = color red $ line $ selectorAt $ getPlayer g
-            in return $ pictures (player : tiles ++ outlines)
+                nums = map (\x -> color green $ line $ drawNumber (x, 0) x) [0..9]
+            in return $ pictures (player : tiles ++ outlines ++ nums)
 
 handler :: Event -> Game -> IO Game
 handler (EventKey (SpecialKey KeyEsc) _ _ _) g = do

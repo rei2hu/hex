@@ -7,10 +7,15 @@ data Player = Player { pos :: OffsetCoords } deriving Show
 player :: OffsetCoords -> Player
 player p = Player { pos = p }
 
+setPos :: Player -> OffsetCoords -> Player
+setPos _ c = Player { pos = c }
+
 -- moves the player in the x direction
 moveX :: Player -> Int -> Player
-moveX (Player { pos = (x, y) }) n = player (x + n, y)
+moveX p n = let (x, y) = pos p
+            in setPos p (x + n, y)
 
 -- moves the player in the y direction
 moveY :: Player -> Int -> Player
-moveY (Player { pos = (x, y) }) n = player (x, y + n)
+moveY p n = let (x, y) = pos p
+            in setPos p (x, y + n)

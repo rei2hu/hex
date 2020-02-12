@@ -14,6 +14,10 @@ data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 tile :: OffsetCoords -> Cmyk -> Tile
 tile p c = Tile { pos = p, colors = c }
 
+-- sets the color of a tile
+setColor :: Tile -> Cmyk -> Tile
+setColor (Tile { pos = p }) c = Tile { pos = p, colors = c }
+
 -- makes a tile at a position
 makeTileAt :: TileMap -> OffsetCoords -> [Float] -> TileMap
 makeTileAt ts p [c, m, y, k] = insert p (tile p (c, m, y, k)) ts
@@ -41,18 +45,22 @@ nghbr _ _ _ = error "invalid neighbor"
 -- is "dark". If the tile hasn't been generated
 -- yet it is also considered dark
 hasDarkNghbr :: TileMap -> Tile -> Bool
-hasDarkNghbr ts (Tile { pos = p }) = let pred (Just (Tile { colors = (_, _, _, k) })) = k > 0.5
-                                         pred Nothing = True
-                                     in any pred $ fmap (nghbr ts p) [1..6]
+hasDarkNghbr ts = (> 0) . numDarkNghbrs ts
 
--- sets the color of a tile
-setColor :: Tile -> Color -> Tile
-setColor (Tile { pos = p }) c = tile p $ colorToCmyk c
+-- the number of dark neighbors a tile has
+-- TODO: use for scaling darken value with
+-- Int -> (a -> a) -> (a -> a) aka (nTimes)
+numDarkNghbrs :: TileMap -> Tile -> Int
+numDarkNghbrs ts t = let pred (Just (Tile { colors = (_, _, _, k) })) = k > 0.5
+                         pred Nothing = True
+                     in length . Prelude.filter pred $ fmap (nghbr ts $ pos t) [1..6]
 
 -- darkens a tile by increasing its "key" value
 darken :: Tile -> Float -> Tile
-darken (Tile { pos = p, colors = (c, m, y, k) }) s = tile p (c, m, y, min 1 (k + 0.1 * s))
+darken t s = let (c, m, y, k) = colors t
+             in setColor t (c, m, y, min 1 (k + 0.1 * s))
 
 -- lightens a tile by decreasing its "key" value
 lighten :: Tile -> Float -> Tile
-lighten (Tile { pos = p, colors = (c, m, y, k) }) s = tile p (c, m, y, max 0 (k - 0.1 * s))
+lighten t s = let (c, m, y, k) = colors t
+              in setColor t (c, m, y, max 0 (k - 0.1 * s))

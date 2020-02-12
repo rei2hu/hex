@@ -50,4 +50,5 @@ revealTile g p = let (g', fs) = getRands g 4
                  in setTiles g' $ Tile.tileAt (tiles g') p fs
 
 advance :: Game -> Float -> Game
-advance (Game { player = pl, tiles = ts, rands = rs }) steps = Game { player = pl, tiles = (Map.map (\t -> if Tile.hasDarkNghbr ts t then Tile.darken t steps else t) ts), rands = rs }
+advance g steps = let ts = tiles g
+                  in setTiles g $ Map.map (\t -> if Tile.hasDarkNghbr ts t then Tile.darken t steps else t) ts
