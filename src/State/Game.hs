@@ -8,6 +8,8 @@ import qualified State.Tile as Tile
 import Util.Color
 import System.Random
 
+import Debug.Trace
+
 data Game = Game { player :: Player.Player, tiles :: Tile.TileMap, rands :: [Float] }
 
 game :: Player.Player -> Tile.TileMap -> Game
@@ -51,4 +53,10 @@ revealTile g p = let (g', fs) = getRands g 4
 
 advance :: Game -> Float -> Game
 advance g steps = let ts = tiles g
-                  in setTiles g $ Map.map (\t -> if Tile.hasDarkNghbr ts t then Tile.darken t steps else t) ts
+                  in setTiles g $ Map.map(\t -> 
+                      if (Tile.pos t) == (getPlayer g) then 
+                          Tile.lighten t steps
+                      else if Tile.hasDarkNghbr ts t then 
+                          Tile.darken t steps
+
+                      else t) ts

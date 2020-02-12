@@ -29,6 +29,11 @@ tileAt ts p s = case Data.Map.Strict.lookup p ts of
                 Nothing -> makeTileAt ts p s
                 (Just _) -> ts
 
+getTileAt :: TileMap -> OffsetCoords -> Tile
+getTileAt ts p = case ts !? p of
+                 (Just a) -> a
+                 Nothing -> error $ "tried to access nonexistant tile at " ++ (show p)
+
 -- gets the neighbors of a position
 -- 1 is the one directly north then rest are in
 -- clockwise rotation
@@ -63,4 +68,4 @@ darken t s = let (c, m, y, k) = colors t
 -- lightens a tile by decreasing its "key" value
 lighten :: Tile -> Float -> Tile
 lighten t s = let (c, m, y, k) = colors t
-              in setColor t (c, m, y, max 0 (k - 0.1 * s))
+              in setColor t (c, m, y, max 0 (k - 0.5 * s))
