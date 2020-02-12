@@ -5,23 +5,24 @@ import Util.Positioning
 import Util.Color
 import Data.Maybe
 import Data.Map.Strict
+import System.Random
 
 type TileMap = Map OffsetCoords Tile
 data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
 -- some tile constructor (is this even necessary?)
 tile :: OffsetCoords -> Cmyk -> Tile
-tile p c = Tile { pos = p, colors = c}
+tile p c = Tile { pos = p, colors = c }
 
 -- makes a tile at a position
-makeTileAt :: TileMap -> OffsetCoords -> TileMap
-makeTileAt ts p = insert p (tile p (1, 0, 0, 0.6)) ts
+makeTileAt :: TileMap -> OffsetCoords -> [Float] -> TileMap
+makeTileAt ts p [c, m, y, k] = insert p (tile p (c, m, y, k)) ts
 
 -- find the tile at a position
 -- creates one if it doesnt exist (does this have a use?)
-tileAt :: TileMap -> OffsetCoords -> TileMap
-tileAt ts p = case Data.Map.Strict.lookup p ts of
-                Nothing -> makeTileAt ts p
+tileAt :: TileMap -> OffsetCoords -> [Float] -> TileMap
+tileAt ts p s = case Data.Map.Strict.lookup p ts of
+                Nothing -> makeTileAt ts p s
                 (Just _) -> ts
 
 -- gets the neighbors of a position

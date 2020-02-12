@@ -25,9 +25,7 @@ handler (EventKey (Char c) Down _ _) g = return $ revealTile <$> id <*> (Player.
 handler _ g = return g
 
 calculate :: Float -> Game -> IO Game
-calculate ms g = do
-    let time = advance g ms
-    return $ time
+calculate ms g = return $ advance g ms
 
 main :: IO ()
 -- Display -> Color -> Int -> world -> (world -> IO Picture) -> (Event -> world -> IO world) -> (Float -> world -> IO world) -> IO ()
