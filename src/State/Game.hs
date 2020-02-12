@@ -1,31 +1,35 @@
 module State.Game where
     
-import State.Player
+import qualified State.Player as Player
 import Util.Positioning (cubeToOff, CubicCoords, OffsetCoords)
 import Graphics.Gloss.Data.Color (Color)
 import qualified Data.Map.Strict as Map
 import qualified State.Tile as Tile
+import Util.Color
 
-data Game = Game Player Tile.TileMap
+data Game = Game { player :: Player.Player, tiles :: Tile.TileMap }
+
+game :: Player.Player -> Tile.TileMap -> Game
+game pl ts = Game { player = pl, tiles = ts }
 
 newGame :: Game
-newGame = Game (Player (0, 0)) $ Tile.makeTileAt (0, 0) Map.empty
+newGame = game (Player.player (0, 0)) $ Tile.tileAt Map.empty (0, 0)
 
 getTiles :: Game -> [(OffsetCoords, Color)]
-getTiles (Game _ t)= Map.foldr (\a b -> ((,) <$> Tile.positionOf <*> Tile.colorOf $ a):b) [] t
+getTiles (Game _ ts)= Map.foldr (\a b -> ((,) <$> Tile.pos <*> cmykToColor . Tile.colors $ a):b) [] ts
 
 getPlayer :: Game -> OffsetCoords
-getPlayer (Game p _) = positionOf p
+getPlayer (Game { player = pl }) = Player.pos pl
 
-movePlayer :: Char -> Game -> Game
-movePlayer 'w' (Game p t) = Game (moveY 1 p) t
-movePlayer 's' (Game p t) = Game (moveY (-1) p) t
-movePlayer 'a' (Game p t) = Game (moveX (-1) p) t
-movePlayer 'd' (Game p t) = Game (moveX 1 p) t
-movePlayer _ g = g
+movePlayer :: Game -> Char -> Game
+movePlayer (Game { player = pl, tiles = ts }) 'w' = game (Player.moveY pl 1) ts
+movePlayer (Game { player = pl, tiles = ts }) 's' = game (Player.moveY pl (-1)) ts
+movePlayer (Game { player = pl, tiles = ts }) 'a' = game (Player.moveX pl (-1)) ts
+movePlayer (Game { player = pl, tiles = ts }) 'd' = game (Player.moveX pl 1) ts
+movePlayer g _ = g
 
-revealTile :: OffsetCoords -> Game -> Game
-revealTile c (Game p ts) = Game p $ Tile.tileAt c ts
+revealTile :: Game -> OffsetCoords -> Game
+revealTile (Game { player = pl, tiles = ts }) p= game pl $ Tile.tileAt ts p
 
-advance :: Float -> Game -> Game
-advance steps (Game p ts) = Game p $ Map.map (\t -> if Tile.hasDarkNghbr t ts then Tile.darken steps t else t) ts
+advance :: Game -> Float -> Game
+advance (Game { player = pl, tiles = ts }) steps = game pl $ Map.map (\t -> if Tile.hasDarkNghbr ts t then Tile.darken t steps else t) ts

@@ -4,41 +4,54 @@ import Graphics.Gloss.Data.Color
 import Util.Positioning
 import Util.Color
 import Data.Maybe
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict
 
-type TileMap = Map.Map OffsetCoords Tile
-data Tile = Tile OffsetCoords Cmyk deriving Show
+type TileMap = Map OffsetCoords Tile
+data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
-makeTileAt :: OffsetCoords -> TileMap -> TileMap
-makeTileAt c@(x, y) ts = Map.insert c (Tile c (1, 0, 0, 0.6)) ts
+-- some tile constructor (is this even necessary?)
+tile :: OffsetCoords -> Cmyk -> Tile
+tile p c = Tile { pos = p, colors = c}
 
-tileAt :: OffsetCoords -> TileMap -> TileMap
-tileAt c ts = case Map.lookup c ts of
-                Nothing -> makeTileAt c ts
-                (Just t) -> ts
+-- makes a tile at a position
+makeTileAt :: TileMap -> OffsetCoords -> TileMap
+makeTileAt ts p = insert p (tile p (1, 0, 0, 0.6)) ts
 
-nghbr :: Int -> TileMap -> OffsetCoords -> Maybe Tile
-nghbr 1 t (x, y) = Map.lookup (x, y - 1) t
-nghbr 2 t (x, y) = Map.lookup (x + 1, y) t
-nghbr 3 t (x, y) = Map.lookup (x + 1, y - 1) t
-nghbr 4 t (x, y) = Map.lookup (x + 1, y - 1) t
-nghbr 5 t (x, y) = Map.lookup (x, y + 1) t
-nghbr 6 t (x, y) = Map.lookup (x - 1, y + 1) t
+-- find the tile at a position
+-- creates one if it doesnt exist (does this have a use?)
+tileAt :: TileMap -> OffsetCoords -> TileMap
+tileAt ts p = case Data.Map.Strict.lookup p ts of
+                Nothing -> makeTileAt ts p
+                (Just _) -> ts
+
+-- gets the neighbors of a position
+-- 1 is the one directly north then rest are in
+-- clockwise rotation
+nghbr :: TileMap -> OffsetCoords -> Int -> Maybe Tile
+nghbr t (x, y) 1 = t !? (x, y - 1)
+nghbr t (x, y) 2 = t !? (x + 1, y) 
+nghbr t (x, y) 3 = t !? (x + 1, y - 1) 
+nghbr t (x, y) 4 = t !? (x + 1, y - 1) 
+nghbr t (x, y) 5 = t !? (x, y + 1) 
+nghbr t (x, y) 6 = t !? (x - 1, y + 1) 
 nghbr _ _ _ = error "invalid neighbor"
 
-hasDarkNghbr :: Tile -> TileMap -> Bool
-hasDarkNghbr (Tile (x, y) _) ts = let pred (Just (Tile _ (_, _, _, k))) = k > 0.5
-                                      pred Nothing = True
-                                  in any pred $ zipWith (uncurry nghbr) (zip [1..6] (replicate 6 ts)) (replicate 6 (x, y))
+-- determines one of the neighbors at a position
+-- is "dark". If the tile hasn't been generated
+-- yet it is also considered dark
+hasDarkNghbr :: TileMap -> Tile -> Bool
+hasDarkNghbr ts (Tile { pos = p }) = let pred (Just (Tile { colors = (_, _, _, k) })) = k > 0.5
+                                         pred Nothing = True
+                                     in any pred $ fmap (nghbr ts p) [1..6]
 
-colorTo :: Color -> Tile -> Tile
-colorTo c (Tile a _) = Tile a (colorToCmyk c)
+-- sets the color of a tile
+setColor :: Tile -> Color -> Tile
+setColor (Tile { pos = p }) c = tile p $ colorToCmyk c
 
-colorOf :: Tile -> Color
-colorOf (Tile _ c) = cmykToColor c
+-- darkens a tile by increasing its "key" value
+darken :: Tile -> Float -> Tile
+darken (Tile { pos = p, colors = (c, m, y, k) }) s = tile p (c, m, y, min 1 (k + 0.1 * s))
 
-positionOf :: Tile -> OffsetCoords
-positionOf (Tile a _) = a
-
-darken :: Float -> Tile -> Tile
-darken s (Tile p (c, m, y, k)) = Tile p (c, m, y, min 1 (k + 0.1 * s))
+-- lightens a tile by decreasing its "key" value
+lighten :: Tile -> Float -> Tile
+lighten (Tile { pos = p, colors = (c, m, y, k) }) s = tile p (c, m, y, max 0 (k - 0.1 * s))

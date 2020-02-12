@@ -22,6 +22,14 @@ hexagonAt (x, y) = map (\i ->
         xf = fromIntegral x
     in (padding * 0.75 * shapeWidth * xf + shapeSize * cos(cm), padding * shapeHeight * yf + shapeSize * sin(cm))) [0..6]
 
+-- literally another thing but traces the edges of the hexagon to show
+-- that it exists
+outlineAt :: OffsetCoords -> Path
+outlineAt (x, y) = map (\i -> 
+    let cm = pi / 180 * 60 * i
+        yf = (fromIntegral y) + if (odd x) then 0.5 else 0
+        xf = fromIntegral x
+    in (padding * 0.75 * shapeWidth * xf + shapeSize * cos(cm), padding * shapeHeight * yf + shapeSize * sin(cm))) [0..6]
 
 -- returns a path which draws a hexagon centered at given coordinates
 -- when traced (difference is no padding)
