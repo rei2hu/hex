@@ -34,6 +34,9 @@ getTileAt ts p = case ts !? p of
                  (Just a) -> a
                  Nothing -> error $ "tried to access nonexistant tile at " ++ (show p)
 
+isDark :: Tile -> Bool
+isDark (Tile { colors = (_, _, _, k)}) = k > 0.5
+
 -- gets the neighbors of a position
 -- 1 is the one directly north then rest are in
 -- clockwise rotation
@@ -56,7 +59,7 @@ hasDarkNghbr ts = (> 0) . numDarkNghbrs ts
 -- TODO: use for scaling darken value with
 -- Int -> (a -> a) -> (a -> a) aka (nTimes)
 numDarkNghbrs :: TileMap -> Tile -> Int
-numDarkNghbrs ts t = let pred (Just (Tile { colors = (_, _, _, k) })) = k > 0.5
+numDarkNghbrs ts t = let pred (Just t) = isDark t
                          pred Nothing = True
                      in length . Prelude.filter pred $ fmap (nghbr ts $ pos t) [1..6]
 
