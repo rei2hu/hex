@@ -7,7 +7,7 @@ data Player = Player { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
 -- some player constructor (necessary?)
 player :: Player
-player = Player { pos = (0, 0), colors = (0, 0, 0, 0) }
+player = Player { pos = (0, 0), colors = (1, 1, 1, 0) }
 
 setPos :: Player -> OffsetCoords -> Player
 setPos Player { colors = cl } c = Player { pos = c, colors = cl }

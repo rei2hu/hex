@@ -7,23 +7,29 @@ import           Graphics.Gloss
 import           Graphics.Gloss.Interface.IO.Game
 import           System.Exit
 import qualified State.Player                  as P
+import           Graphics.Overlay
 
 window :: Display
 window = FullScreen -- InWindow "Hex" (800, 600) (10, 10)
 
+
 drawing :: Game -> IO Picture
 drawing g =
   let
-    positions = getTiles g
+    positions    = getTiles g
     ts = map (\(co, c) -> (color c . polygon . hexagonAt) co) positions
     outlines = map (\(co, _) -> (color white . line . hexagonAt) co) positions
     plp@(px, py) = getPlayer g
-    pl = (color red . line . selectorAt) plp
-    nums = map (\x -> color green $ line $ drawNumber (x, 0) x) [0 .. 9]
+    pl           = (color red . line . selectorAt) plp
+    nums         = map (\x -> color green $ line $ drawNumber (x, 0) x) [0 .. 9]
+    o            = overlay g
   in
     -- todo: -32 is shape size basically
-    return $ translate (fromIntegral px * (-32)) (fromIntegral py * (-32)) $ pictures
-      (pl : ts ++ outlines ++ nums)
+    return $ pictures
+      [ translate (fromIntegral px * (-32)) (fromIntegral py * (-32))
+        $ pictures (pl : ts ++ outlines ++ nums)
+      , o
+      ]
 
 handler :: Event -> Game -> IO Game
 handler (EventKey (SpecialKey KeyEsc) _ _ _) g = do
