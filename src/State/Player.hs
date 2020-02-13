@@ -1,21 +1,21 @@
 module State.Player where
 
-import Util.Positioning (OffsetCoords)
-data Player = Player { pos :: OffsetCoords } deriving Show
+import           Util.Positioning
+import           Util.Color
+
+data Player = Player { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
 -- some player constructor (necessary?)
-player :: OffsetCoords -> Player
-player p = Player { pos = p }
+player :: Player
+player = Player { pos = (0, 0), colors = (0, 0, 0, 0) }
 
 setPos :: Player -> OffsetCoords -> Player
-setPos _ c = Player { pos = c }
+setPos Player { colors = cl } c = Player { pos = c, colors = cl }
 
 -- moves the player in the x direction
 moveX :: Player -> Int -> Player
-moveX p n = let (x, y) = pos p
-            in setPos p (x + n, y)
+moveX p n = let (x, y) = pos p in setPos p (x + n, y)
 
 -- moves the player in the y direction
 moveY :: Player -> Int -> Player
-moveY p n = let (x, y) = pos p
-            in setPos p (x, y + n)
+moveY p n = let (x, y) = pos p in setPos p (x, y + n)

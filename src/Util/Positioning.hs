@@ -5,8 +5,8 @@ type OffsetCoords = (Int, Int)
 
 -- converts cubic coordinates to offset coords
 cubeToOff :: CubicCoords -> OffsetCoords
-cubeToOff (p, q, r) = (p + floor ((fromIntegral r) / 2), r)
+cubeToOff (p, _, r) = (p + floor ((fromIntegral r :: Float) / 2), r)
 
 -- converts offset coordinates to cubic coords
 offToCube :: OffsetCoords -> CubicCoords
-offToCube (x, y) = (x - floor ((fromIntegral y) / 2), -x - y, y)
+offToCube (x, y) = (x - floor ((fromIntegral y :: Float) / 2), -x - y, y)
