@@ -6,6 +6,7 @@ import           Data.Map.Strict
 
 type TileMap = Map OffsetCoords Tile
 data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
+data Neighbor = N | NE | SE | S | SW | NW deriving Enum
 
 -- some tile constructor (is this even necessary?)
 tile :: OffsetCoords -> Cmyk -> Tile
@@ -36,16 +37,13 @@ isDark :: Tile -> Bool
 isDark Tile { colors = (_, _, _, k) } = k > 0.5
 
 -- gets the neighbors of a position
--- 1 is the one directly north then rest are in
--- clockwise rotation
-nghbr :: TileMap -> OffsetCoords -> Int -> Maybe Tile
-nghbr t (x, y) 1 = t !? (x, y - 1)
-nghbr t (x, y) 2 = t !? (x + 1, y)
-nghbr t (x, y) 3 = t !? (x + 1, y - 1)
-nghbr t (x, y) 4 = t !? (x + 1, y - 1)
-nghbr t (x, y) 5 = t !? (x, y + 1)
-nghbr t (x, y) 6 = t !? (x - 1, y + 1)
-nghbr _ _      _ = error "invalid neighbor"
+nghbr :: TileMap -> OffsetCoords -> Neighbor -> Maybe Tile
+nghbr t (x, y) N  = t !? (x, y - 1)
+nghbr t (x, y) NE = t !? (x + 1, y)
+nghbr t (x, y) SE = t !? (x + 1, y - 1)
+nghbr t (x, y) S  = t !? (x + 1, y - 1)
+nghbr t (x, y) SW = t !? (x, y + 1)
+nghbr t (x, y) NW = t !? (x - 1, y + 1)
 
 -- determines one of the neighbors at a position
 -- is "dark". If the tile hasn't been generated
@@ -60,7 +58,7 @@ numDarkNghbrs :: TileMap -> Tile -> Int
 numDarkNghbrs ts t =
   let pr (Just t') = isDark t'
       pr Nothing   = True
-  in  length . Prelude.filter pr $ fmap (nghbr ts $ pos t) [1 .. 6]
+  in  length . Prelude.filter pr $ fmap (nghbr ts $ pos t) [N .. NW]
 
 -- darkens a tile by increasing its "key" value
 darken :: Tile -> Float -> Tile
