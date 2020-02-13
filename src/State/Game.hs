@@ -55,12 +55,19 @@ revealTile :: Game -> OffsetCoords -> Game
 revealTile g p =
   let (g', fs) = getRands g 4 in setTiles g' $ T.tileAt (tiles g') p fs
 
+getTileAt :: Game -> OffsetCoords -> T.Tile
+getTileAt g = T.getTileAt (tiles g)
+
+getTileAtPlayer :: Game -> T.Tile
+getTileAtPlayer = getTileAt <$> id <*> (P.pos . player)
+
 advance :: Game -> Float -> Game
 advance g steps =
   let ts = tiles g
-  in  setTiles g $ M.map
+      g' = setTiles g $ M.map
         (\t -> if T.pos t == getPlayer g
           then T.lighten t steps
           else if T.hasDarkNghbr ts t then T.darken t steps else t
         )
         ts
+      getTileAtPlayer g'
