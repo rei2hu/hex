@@ -5,21 +5,24 @@ import           Util.Color
 
 data Player = Player { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
--- some player constructor (necessary?)
+-- some player constructor
 player :: Player
-player = Player { pos = (0, 0), colors = (1, 1, 1, 0) }
+player = Player { pos = (0, 0), colors = (0.5, 0.5, 0.5, 0) }
 
-setPos :: Player -> OffsetCoords -> Player
-setPos Player { colors = cl } c = Player { pos = c, colors = cl }
+-- sets the position of a player
+setPos :: OffsetCoords -> Player -> Player
+setPos p Player { colors = cl } = Player p cl
 
 -- moves the player in the x direction
-moveX :: Player -> Int -> Player
-moveX p n = let (x, y) = pos p in setPos p (x + n, y)
+moveX :: Int -> Player -> Player
+moveX n pl = let (x, y) = pos pl in setPos (x + n, y) pl
 
 -- moves the player in the y direction
-moveY :: Player -> Int -> Player
-moveY p n = let (x, y) = pos p in setPos p (x, y + n)
+moveY :: Int -> Player -> Player
+moveY n pl = let (x, y) = pos pl in setPos (x, y + n) pl
 
-modifyColor :: Player -> (Float, Float, Float) -> Player
-modifyColor Player { pos = p, colors = (c, m, y, k) } (c', m', y') =
-  Player { pos = p, colors = (c + c', m + m', y + y', k) }
+-- modifies the color of the player by
+-- adding the provided color to it
+modifyColor :: Cmyk -> Player -> Player
+modifyColor c Player { pos = p, colors = c' } =
+  Player { pos = p, colors = addCmyk c c' }

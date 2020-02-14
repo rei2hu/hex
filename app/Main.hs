@@ -2,7 +2,7 @@ module Main where
 
 import           Graphics.Hexagon
 import           Graphics.Numbers
-import           State.Game
+import           State.Game                    as G
 import           Graphics.Gloss
 import           Graphics.Gloss.Interface.IO.Game
 import           System.Exit
@@ -19,7 +19,7 @@ drawing g =
     positions    = getTiles g
     ts = map (\(co, c) -> (color c . polygon . hexagonAt) co) positions
     outlines = map (\(co, _) -> (color white . line . hexagonAt) co) positions
-    plp@(px, py) = getPlayer g
+    plp@(px, py) = (P.pos . G.player) g
     pl           = (color red . line . selectorAt) plp
     nums         = map (\x -> color green $ line $ drawNumber (x, 0) x) [0 .. 9]
     o            = overlay g
@@ -32,15 +32,12 @@ drawing g =
       ]
 
 handler :: Event -> Game -> IO Game
-handler (EventKey (SpecialKey KeyEsc) _ _ _) g = do
-  _ <- die "exit"
-  return g
-handler (EventKey (Char c) Down _ _) g =
-  return $ revealTile <$> id <*> (P.pos . player) $ movePlayer g c
-handler _ g = return g
+handler (EventKey (SpecialKey KeyEsc) _ _ _) = return $ die "exit"
+handler (EventKey (Char c) Down _ _) = return . revealPlayerTile . movePlayer c
+handler _ = return
 
 calculate :: Float -> Game -> IO Game
-calculate ms g = return $ advance g ms
+calculate ms g = return $ advance ms g
 
 main :: IO ()
 -- Display -> Color -> Int -> world -> (world -> IO Picture) -> (Event -> world -> IO world) -> (Float -> world -> IO world) -> IO ()

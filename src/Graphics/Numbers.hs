@@ -31,6 +31,7 @@ drawNumber (x, y) n = let half = numWidth / 2
                           7 -> path [(id, (+) numHeight), (subtract numWidth, id)] bottomRight
                           8 -> path [(id, (+) numHeight), (subtract numWidth, id), (id, subtract numHeight), ((+) numWidth, id), (id, (+) halfH), (subtract numWidth, id)] bottomRight
                           9 -> path [((+) numWidth, id), (id, (+) numHeight), (subtract numWidth, id), (id, subtract halfH), ((+) numWidth, id)] bottomLeft
+                          nm -> error $ "invalid number to be drawn: " ++ show nm
 
 -- takes an set of x y transformations and an initial
 -- point to generate a path. Is this written well?

@@ -10,64 +10,67 @@ import           System.Random
 
 data Game = Game { player :: P.Player, tiles :: T.TileMap, rands :: [Float] }
 
-game :: P.Player -> T.TileMap -> Game
-game pl ts = Game { player = pl, tiles = ts, rands = randoms $ mkStdGen 0 }
-
+-- returns a game with default state
 newGame :: Game
-newGame =
-  game P.player $ M.singleton (0, 0) $ T.tile (0, 0) $ colorToCmyk white
+newGame = Game { player = P.player
+               , tiles  = M.singleton (0, 0) $ T.Tile (0, 0) $ colorToCmyk white
+               , rands  = randoms $ mkStdGen 0
+               }
 
-setPlayer :: Game -> P.Player -> Game
-setPlayer Game { tiles = ts, rands = rs } pl =
+-- sets the player of the game
+setPlayer :: P.Player -> Game -> Game
+setPlayer pl Game { tiles = ts, rands = rs } =
   Game { player = pl, tiles = ts, rands = rs }
 
-setTiles :: Game -> T.TileMap -> Game
-setTiles Game { player = pl, rands = rs } ts =
+-- sets the tiles of the game
+setTiles :: T.TileMap -> Game -> Game
+setTiles ts Game { player = pl, rands = rs } =
   Game { player = pl, tiles = ts, rands = rs }
 
-setRands :: Game -> [Float] -> Game
-setRands Game { player = pl, tiles = ts } rs =
-  Game { player = pl, tiles = ts, rands = rs }
-
-setSeed :: Game -> Int -> Game
-setSeed Game { player = pl, tiles = ts } s =
+-- sets the seed of the game
+-- actually it refreshes the internal float list
+setSeed :: Int -> Game -> Game
+setSeed s Game { player = pl, tiles = ts } =
   Game { player = pl, tiles = ts, rands = randoms $ mkStdGen s }
 
+-- gets several random floats from the games'
+-- internal list
 getRands :: Game -> Int -> (Game, [Float])
-getRands g n = let rs = rands g in (setRands g (drop n rs), take n rs)
+getRands g@Game { player = pl, tiles = ts } n =
+  let rs = rands g
+  in  (Game { player = pl, tiles = ts, rands = drop n rs }, take n rs)
 
+-- returns a list of (positionOfTile, colorOfTile) tuples
 getTiles :: Game -> [(OffsetCoords, Color)]
 getTiles g =
   M.foldr (\a b -> ((,) <$> T.pos <*> cmykToColor . T.colors $ a) : b) []
     $ tiles g
 
-getPlayer :: Game -> OffsetCoords
-getPlayer g = P.pos $ player g
+-- moves a player in a direction
+movePlayer :: Char -> Game -> Game
+movePlayer 'w' g = setPlayer (P.moveY 1 (player g)) g
+movePlayer 's' g = setPlayer (P.moveY (-1) (player g)) g
+movePlayer 'a' g = setPlayer (P.moveX (-1) (player g)) g
+movePlayer 'd' g = setPlayer (P.moveX 1 (player g)) g
+movePlayer _   g = g
 
-movePlayer :: Game -> Char -> Game
-movePlayer g 'w' = setPlayer g (P.moveY (player g) 1)
-movePlayer g 's' = setPlayer g (P.moveY (player g) (-1))
-movePlayer g 'a' = setPlayer g (P.moveX (player g) (-1))
-movePlayer g 'd' = setPlayer g (P.moveX (player g) 1)
-movePlayer g _   = g
+-- adds a tile to the game at the position
+-- or does nothing if one already exists
+revealTile :: OffsetCoords -> Game -> Game
+revealTile p g =
+  let (g', fs) = getRands g 4 in setTiles (T.mmakeTileAt fs p (tiles g')) g'
 
-revealTile :: Game -> OffsetCoords -> Game
-revealTile g p =
-  let (g', fs) = getRands g 4 in setTiles g' $ T.tileAt (tiles g') p fs
+revealPlayerTile :: Game -> Game
+revealPlayerTile = revealTile <$> P.pos . player <*> id
 
-getTileAt :: Game -> OffsetCoords -> T.Tile
-getTileAt g = T.getTileAt (tiles g)
-
-getTileAtPlayer :: Game -> T.Tile
-getTileAtPlayer = getTileAt <$> id <*> (P.pos . player)
-
-advance :: Game -> Float -> Game
-advance g steps =
-  let ts = tiles g
-      g' = setTiles g $ M.map
-        (\t -> if T.pos t == getPlayer g
-          then T.lighten t steps
-          else if T.hasDarkNghbr ts t then T.darken t steps else t
-        )
-        ts
-      getTileAtPlayer g'
+-- advances the game
+advance :: Float -> Game -> Game
+advance steps g@Game { tiles = ts, player = pl } = setTiles
+  (M.map
+    (\t -> if T.pos t == P.pos pl
+      then T.lighten steps t
+      else if T.hasDarkNghbr ts t then T.darken steps t else t
+    )
+    ts
+  )
+  g

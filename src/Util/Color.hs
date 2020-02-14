@@ -18,3 +18,9 @@ rgbaToCmyk (r, g, b, _) = (1 - r, 1 - g, 1 - b, 0)
 
 colorToCmyk :: Color -> Cmyk
 colorToCmyk = rgbaToCmyk . rgbaOfColor
+
+addCmyk :: Cmyk -> Cmyk -> Cmyk
+addCmyk (c, m, y, k) (c', m', y', k') = (c + c', m + m', y + y', k + k')
+
+subCmyk :: Cmyk -> Cmyk -> Cmyk
+subCmyk z (c, m, y, k) = addCmyk (-c, -m, -y, -k) z
