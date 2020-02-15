@@ -32,6 +32,15 @@ addColor :: Cmyk -> Player -> Player
 addColor c Player { pos = p, colors = c' } =
   Player { pos = p, colors = addCmyk c c' }
 
+-- bleeds color from the player
 bleed :: Float -> Player -> Player
 bleed s p@Player { colors = c } =
   let s' = s * playerBleedRate in setColor (subCmyk c (s', s', s', s')) p
+
+-- barfs the current colors from the player if
+-- possible
+barf :: Player -> (Bool, Player)
+barf pl@Player { colors = (c, m, y, k) } =
+  let cmyk@[c', m', y', k'] = map (subtract playerBarfThreshold) [c, m, y, k]
+      can                   = all (> 0) cmyk
+  in  (can, if can then setColor (c', m', y', k') pl else pl)

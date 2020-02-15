@@ -7,6 +7,7 @@ import           Graphics.Gloss.Interface.IO.Game
 import           System.Exit
 import qualified State.Player                  as P
 import           Graphics.Overlay
+import           Util.Config
 
 window :: Display
 window = FullScreen -- InWindow "Hex" (800, 600) (10, 10)
@@ -21,16 +22,19 @@ drawing g =
     plp@(px, py) = (P.pos . G.player) g
     pl           = (color red . line . selectorAt) plp
     o            = overlay g
+    -- shift values arent perfect
+    shftV        = negate $ hexagonHeight + hexagonPadding * 2
+    shftH        = negate $ hexagonWidth + hexagonPadding * 2
   in
-    -- todo: -32 is shape size basically
     return $ pictures
-      [ translate (fromIntegral px * (-32)) (fromIntegral py * (-32))
+      [ translate (fromIntegral px * shftH) (fromIntegral py * shftV)
         $ pictures (pl : ts ++ outlines)
       , o
       ]
 
 handler :: Event -> Game -> IO Game
 handler (EventKey (SpecialKey KeyEsc) _ _ _) = return $ die "exit"
+handler (EventKey (Char 'p') Down _ _) = return . dumpColor
 handler (EventKey (Char c) Down _ _) = return . revealPlayerTile . movePlayer c
 handler _ = return
 

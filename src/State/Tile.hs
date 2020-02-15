@@ -9,31 +9,34 @@ type TileMap = Map OffsetCoords Tile
 data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 data Neighbor = N | NE | SE | S | SW | NW deriving Enum
 
--- basic rules:
--- if tile is dark
---   then cannot bleed
--- else if tile is finished bleeding
---   then cannot be darkened
---
--- what prevents camping on a tile until bled?
--- cant bleed if no space
--- darkness is faster than bleed
-
 -- sets the color of a tile
 setColor :: Cmyk -> Tile -> Tile
 setColor c t = Tile { pos = pos t, colors = c }
 
--- determines if a tile is dark by random criteria
+-- determines if a tile is dark
 isDark :: Tile -> Bool
 isDark Tile { colors = (_, _, _, k) } = k > tileDarkThreshold
+
+-- determines if a tile is light
+isLight :: Tile -> Bool
+isLight Tile { colors = (_, _, _, k) } = k < tileLightThreshold
+
+-- advances a tile (either lightens or darknes it)
+advance :: Int -> Float -> Tile -> Tile
+advance dts s t@Tile { colors = (c, m, y, _) } =
+  -- darken is scaled by number of dark neighbors
+  let s' = s * fromIntegral dts
+  in  case (c, m, y) of
+        -- if a tile is drained, then we both lighten and darken it
+        (0, 0, 0) -> darken s' . lighten s $ t
+        -- or else we just darken it
+        _         -> darken s' t
 
 -- darkens a tile by increasing its "key" value
 darken :: Float -> Tile -> Tile
 darken s t =
   let (c, m, y, k) = colors t
-  in  case (c, m, y, k) of
-        (0, 0, 0, _) -> lighten s t
-        _            -> setColor (c, m, y, min 1 (k + tileDarkenRate * s)) t
+  in  setColor (c, m, y, min 1 (k + tileDarkenRate * s)) t
 
 -- lightens a tile by decreasing its "key" value
 lighten :: Float -> Tile -> Tile
@@ -91,8 +94,6 @@ hasDarkNghbr :: TileMap -> Tile -> Bool
 hasDarkNghbr ts = (> 0) . numDarkNghbrs ts
 
 -- the number of dark neighbors a tile has
--- TODO: use for scaling darken value with
--- Int -> (a -> a) -> (a -> a) aka (nTimes)
 numDarkNghbrs :: TileMap -> Tile -> Int
 numDarkNghbrs ts t =
   let pr (Just t') = isDark t'

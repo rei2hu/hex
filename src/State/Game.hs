@@ -55,6 +55,15 @@ movePlayer 'a' g = setPlayer (P.moveX (-1) (player g)) g
 movePlayer 'd' g = setPlayer (P.moveX 1 (player g)) g
 movePlayer _   g = g
 
+-- dumps the players colors into the current tile
+dumpColor :: Game -> Game
+dumpColor g@Game { player = pl, tiles = ts } =
+  let (c, pl') = P.barf pl
+      t        = T.getTileAt (P.pos pl) ts
+  in  setTiles (if c then T.replace (T.setColor (0, 0, 0, 0) t) ts else ts)
+        . setPlayer pl'
+        $ g
+
 -- adds a tile to the game at the position
 -- or does nothing if one already exists
 revealTile :: OffsetCoords -> Game -> Game
@@ -66,7 +75,7 @@ revealPlayerTile = revealTile <$> P.pos . player <*> id
 
 -- advances the game
 advance :: Float -> Game -> Game
-advance f = playerAdvance f . mapAdvance f
+advance f = mapAdvance f . playerAdvance f
 
 -- advances the player aspects of the game
 playerAdvance :: Float -> Game -> Game
@@ -80,5 +89,13 @@ playerAdvance steps g@Game { tiles = ts, player = pl } =
 -- advances the map aspects of the game
 mapAdvance :: Float -> Game -> Game
 mapAdvance steps g@Game { tiles = ts } = setTiles
-  (M.map (\t -> if T.hasDarkNghbr ts t then T.darken steps t else t) ts)
+  (M.map
+    (\t ->
+      let dts = fromIntegral $ T.numDarkNghbrs ts t
+      -- darken rate is based on number of dark neighbors and
+      -- number of revealed light tiles and some random scaling
+      in  T.advance dts steps t
+    )
+    ts
+  )
   g
