@@ -18,11 +18,11 @@ padding = 5
 overlay :: Game -> Picture
 overlay g =
   let (c, m, y, _) = colors $ G.player g
-  in  pictures $ color green (coords g) : zipWith3
-        bar
-        [Cyan .. Yellow]
-        [ (5 + x, 0) | x <- [1 .. 3] ]
-        [c, m, y]
+  in  pictures $ -- color green (coords g) : 
+                 zipWith3 bar
+                          [Cyan .. Yellow]
+                          [ (5 + x, 0) | x <- [1 .. 3] ]
+                          [c, m, y]
 
 
 -- shows the coordinates of the player on the screen

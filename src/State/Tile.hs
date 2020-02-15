@@ -31,7 +31,7 @@ darken :: Float -> Tile -> Tile
 darken s t =
   let (c, m, y, k) = colors t
   in  case (c, m, y, k) of
-        (0, 0, 0, 0) -> lighten s t
+        (0, 0, 0, _) -> lighten s t
         _            -> setColor (c, m, y, min 1 (k + 0.1 * s)) t
 
 -- lightens a tile by decreasing its "key" value
@@ -45,12 +45,12 @@ replace t = insert (pos t) t
 
 -- bleeds the tile's colors a certain amount
 bleed :: Float -> Tile -> (Cmyk, Tile)
-bleed s t@Tile { colors = c } = if not . isDark $ t
-  then
-    let s' = s
+bleed s t@Tile { colors = c} = case c of
+  (_, _, _, 1) -> ((0, 0, 0, 0), t)
+  _ ->
+    let s'                  = s
         c'@(cc, cm, cy, ck) = subCmyk c (s', s', s', 0)
     in  ((min s' cc, min s' cm, min s' cy, min s' ck), setColor c' t)
-  else ((0, 0, 0, 0), t)
 
 --
 -- TileMap functions
