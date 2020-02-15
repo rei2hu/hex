@@ -65,12 +65,17 @@ revealPlayerTile = revealTile <$> P.pos . player <*> id
 
 -- advances the game
 advance :: Float -> Game -> Game
-advance steps g@Game { tiles = ts, player = pl } = setTiles
-  (M.map
-    (\t -> if T.pos t == P.pos pl
-      then T.lighten steps t
-      else if T.hasDarkNghbr ts t then T.darken steps t else t
-    )
-    ts
-  )
+advance f = playerAdvance f . mapAdvance f
+
+-- advances the player aspects of the game
+playerAdvance :: Float -> Game -> Game
+playerAdvance steps g@Game { tiles = ts, player = pl } =
+  let t       = T.getTileAt (P.pos pl) ts
+      (b, t') = T.bleed steps t
+  in  setPlayer (P.addColor b $ P.bleed steps pl) . setTiles (T.replace t' ts) $ g
+
+-- advances the map aspects of the game
+mapAdvance :: Float -> Game -> Game
+mapAdvance steps g@Game { tiles = ts } = setTiles
+  (M.map (\t -> if T.hasDarkNghbr ts t then T.darken steps t else t) ts)
   g

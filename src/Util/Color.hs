@@ -20,7 +20,9 @@ colorToCmyk :: Color -> Cmyk
 colorToCmyk = rgbaToCmyk . rgbaOfColor
 
 addCmyk :: Cmyk -> Cmyk -> Cmyk
-addCmyk (c, m, y, k) (c', m', y', k') = (c + c', m + m', y + y', k + k')
+addCmyk (c, m, y, k) (c', m', y', k') = 
+  let clamp = min 1 . max 0
+  in (clamp (c + c'), clamp (m + m'), clamp (y + y'), clamp (k + k'))
 
 subCmyk :: Cmyk -> Cmyk -> Cmyk
 subCmyk z (c, m, y, k) = addCmyk (-c, -m, -y, -k) z

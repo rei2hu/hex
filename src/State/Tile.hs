@@ -8,6 +8,16 @@ type TileMap = Map OffsetCoords Tile
 data Tile = Tile { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 data Neighbor = N | NE | SE | S | SW | NW deriving Enum
 
+-- basic rules:
+-- if tile is dark
+--   then cannot bleed
+-- else if tile is finished bleeding
+--   then cannot be darkened
+--
+-- what prevents camping on a tile until bled?
+-- cant bleed if no space
+-- darkness is faster than bleed
+
 -- sets the color of a tile
 setColor :: Cmyk -> Tile -> Tile
 setColor c t = Tile { pos = pos t, colors = c }
@@ -19,12 +29,28 @@ isDark Tile { colors = (_, _, _, k) } = k > 0.5
 -- darkens a tile by increasing its "key" value
 darken :: Float -> Tile -> Tile
 darken s t =
-  let (c, m, y, k) = colors t in setColor (c, m, y, min 1 (k + 0.1 * s)) t
+  let (c, m, y, k) = colors t
+  in  case (c, m, y, k) of
+        (0, 0, 0, 0) -> lighten s t
+        _            -> setColor (c, m, y, min 1 (k + 0.1 * s)) t
 
 -- lightens a tile by decreasing its "key" value
 lighten :: Float -> Tile -> Tile
 lighten s t =
   let (c, m, y, k) = colors t in setColor (c, m, y, max 0 (k - 0.5 * s)) t
+
+-- inserts a tile into a tilemap (replaces if already exists)
+replace :: Tile -> TileMap -> TileMap
+replace t = insert (pos t) t
+
+-- bleeds the tile's colors a certain amount
+bleed :: Float -> Tile -> (Cmyk, Tile)
+bleed s t@Tile { colors = c } = if not . isDark $ t
+  then
+    let s' = s
+        c'@(cc, cm, cy, ck) = subCmyk c (s', s', s', 0)
+    in  ((min s' cc, min s' cm, min s' cy, min s' ck), setColor c' t)
+  else ((0, 0, 0, 0), t)
 
 --
 -- TileMap functions

@@ -1,7 +1,6 @@
 module Main where
 
 import           Graphics.Hexagon
-import           Graphics.Numbers
 import           State.Game                    as G
 import           Graphics.Gloss
 import           Graphics.Gloss.Interface.IO.Game
@@ -21,13 +20,12 @@ drawing g =
     outlines = map (\(co, _) -> (color white . line . hexagonAt) co) positions
     plp@(px, py) = (P.pos . G.player) g
     pl           = (color red . line . selectorAt) plp
-    nums         = map (\x -> color green $ line $ drawNumber (x, 0) x) [0 .. 9]
     o            = overlay g
   in
     -- todo: -32 is shape size basically
     return $ pictures
       [ translate (fromIntegral px * (-32)) (fromIntegral py * (-32))
-        $ pictures (pl : ts ++ outlines ++ nums)
+        $ pictures (pl : ts ++ outlines)
       , o
       ]
 
