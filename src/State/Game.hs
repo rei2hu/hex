@@ -7,6 +7,7 @@ import qualified Data.Map.Strict               as M
 import qualified State.Tile                    as T
 import           Util.Color
 import           System.Random
+import           Util.Config
 
 data Game = Game { player :: P.Player, tiles :: T.TileMap, rands :: [Float] }
 
@@ -14,7 +15,7 @@ data Game = Game { player :: P.Player, tiles :: T.TileMap, rands :: [Float] }
 newGame :: Game
 newGame = Game { player = P.player
                , tiles  = M.singleton (0, 0) $ T.Tile (0, 0) $ colorToCmyk white
-               , rands  = randoms $ mkStdGen 0
+               , rands  = randoms $ mkStdGen startSeed
                }
 
 -- sets the player of the game
@@ -72,7 +73,9 @@ playerAdvance :: Float -> Game -> Game
 playerAdvance steps g@Game { tiles = ts, player = pl } =
   let t       = T.getTileAt (P.pos pl) ts
       (b, t') = T.bleed steps t
-  in  setPlayer (P.addColor b $ P.bleed steps pl) . setTiles (T.replace t' ts) $ g
+  in  setPlayer (P.addColor b $ P.bleed steps pl)
+        . setTiles (T.replace t' ts)
+        $ g
 
 -- advances the map aspects of the game
 mapAdvance :: Float -> Game -> Game

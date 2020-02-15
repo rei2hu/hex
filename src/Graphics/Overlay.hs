@@ -6,13 +6,9 @@ import           Graphics.Gloss.Data.Color
 import           Util.Positioning
 import           State.Player
 import           Graphics.Numbers              as N
+import           Util.Config
 
 data BarType = Cyan | Magenta | Yellow | Key deriving Enum
-
-barHeight, barWidth, padding :: Float
-barHeight = 100
-barWidth = 20
-padding = 5
 
 -- overlay x, y should 
 overlay :: Game -> Picture
@@ -44,8 +40,11 @@ bar Key     p pct = color black $ _bar p pct
 
 _bar :: OffsetCoords -> Float -> Picture
 _bar (x, y) pct =
-  let fx = fromIntegral x * (barWidth + Graphics.Overlay.padding) :: Float
-      fy = fromIntegral y * (barHeight + Graphics.Overlay.padding) :: Float
-      bl@(blx, bly) = (fx - barWidth / 2, fy - barHeight / 2)
-      tr@(trx, try) = (fx + barWidth / 2, fy + (pct - 0.5) * barHeight)
-  in  polygon [bl, (blx, try), tr, (trx, bly), bl]
+  let
+    fx = fromIntegral x * (overlayBarWidth + overlayBarPadding) :: Float
+    fy = fromIntegral y * (overlayBarHeight + overlayBarPadding) :: Float
+    bl@(blx, bly) = (fx - overlayBarWidth / 2, fy - overlayBarHeight / 2)
+    tr@(trx, try) =
+      (fx + overlayBarWidth / 2, fy + (pct - 0.5) * overlayBarHeight)
+  in
+    polygon [bl, (blx, try), tr, (trx, bly), bl]

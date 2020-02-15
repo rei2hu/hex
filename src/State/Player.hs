@@ -2,6 +2,7 @@ module State.Player where
 
 import           Util.Positioning
 import           Util.Color
+import           Util.Config
 
 data Player = Player { pos :: OffsetCoords, colors :: Cmyk } deriving Show
 
@@ -33,4 +34,4 @@ addColor c Player { pos = p, colors = c' } =
 
 bleed :: Float -> Player -> Player
 bleed s p@Player { colors = c } =
-  let s' = s * 0.1 in setColor (subCmyk c (s', s', s', s')) p
+  let s' = s * playerBleedRate in setColor (subCmyk c (s', s', s', s')) p
