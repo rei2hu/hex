@@ -4,13 +4,14 @@ module Util.Config where
 startSeed :: Int
 startSeed = 0
 
-tileDarkThreshold, tileDarkenRate, tileLightThreshold, tileLightenRate, tileBleedThreshold :: Float
+tileDarkThreshold, tileDarkenRate, tileDarkDecayRate, tileLightThreshold, tileLightenRate, tileLightGrowRate, tileBleedThreshold :: Float
 tileDarkThreshold = 0.5 -- tiles with k values higher than this are dark
+tileDarkenRate = 0.0125 -- rate at which a tile darkens
+tileDarkDecayRate = 0.1 -- rate at which a tile's colors decay
 tileLightThreshold = 0.1 -- tiles with k values less than this are light
 tileLightenRate = 0.05 -- rate at which a tile lightens
-tileBleedThreshold = 0.9 -- tiles with k values higher than this wont bleed
---
-tileDarkenRate = tileLightenRate / 4 -- rate at which a tile darkens
+tileLightGrowRate = 0.25 -- rate at which a tile grows colors
+tileBleedThreshold = 1 -- tiles with k values higher than this wont bleed
 
 playerBleedRate, playerBarfThreshold :: Float
 playerBleedRate = 0.1 -- rate at which the player bleeds

@@ -21,7 +21,7 @@ overlay g =
                     [Cyan .. Yellow]
                     [ (px + x, py) | x <- [0 .. 2] ]
                     [c, m, y]
-        ++ [thresholdBar overlayPosition, tileRate overlayPosition g]
+        ++ [thresholdBar overlayPosition, tileStats g]
 
 
 -- shows the coordinates of the player on the screen
@@ -32,9 +32,14 @@ coords g =
           map (\(i, c) -> (line . N.drawNumber (i, z)) c) . zip [1 ..] . show
   in  pictures $ concat $ zipWith fpaths [0, 1] [y, x]
 
-tileRate :: OffsetCoords -> Game -> Picture
-tileRate ps Game { G.player = pl, tiles = ts } =
-  let t = T.getTileAt (P.pos pl) ts in color green $ N.drawNumbers ps $ T.rate ts t
+tileStats :: Game -> Picture
+tileStats Game { G.player = pl, tiles = ts } =
+  let t            = T.getTileAt (P.pos pl) ts
+      (c, m, y, k) = T.colors t
+  in  color green
+        . pictures
+        . map (\(i, n) -> N.drawNumbers (10, 10 + i) n)
+        $ zip [1 ..] $ map (round . (*) 100) [c, m, y, k]
 
 -- draws a line that shows the barf threshold
 thresholdBar :: OffsetCoords -> Picture

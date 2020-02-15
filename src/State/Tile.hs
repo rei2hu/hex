@@ -22,34 +22,37 @@ isLight :: Tile -> Bool
 isLight Tile { colors = (_, _, _, k) } = k < tileLightThreshold
 
 -- advances a tile (either lightens or darknes it)
-advance :: TileMap -> Float -> Tile -> Tile
-advance ts s t@Tile { colors = (c, m, y, _) } =
+advance :: TileMap -> Float -> [Float] -> Tile -> Tile
+advance ts s rs t@Tile { colors = (c, m, y, _) } =
   -- darken is scaled by number of dark neighbors
-  let dts = fromIntegral $ numDarkNghbrs ts t
-      s'  = s * fromIntegral dts
+  let s' = s * fromIntegral (numDarkNghbrs ts t)
   in  case (c, m, y) of
-        -- if a tile is drained, then we both lighten and darken it
-        (0, 0, 0) -> darken s' . lighten s $ t
+                            -- if a tile is drained, then we both lighten and darken it
+        (0, 0, 0) -> darken rs s' . lighten rs s $ t
         -- or else we just darken it
-        _         -> darken s' t
-
-rate :: TileMap -> Tile -> Int
-rate ts t =
-  let dts = fromIntegral $ numDarkNghbrs ts t
-      r1  = dts * tileDarkenRate
-  in  round $ (tileLightenRate - r1) * 10000
+        _         -> darken rs s' t
 
 -- darkens a tile by increasing its "key" value
-darken :: Float -> Tile -> Tile
-darken s t =
-  let (c, m, y, k) = colors t
-  in  setColor (c, m, y, min 1 (k + tileDarkenRate * s)) t
+-- if a tile is fully darkened, then it starts losing cmy
+darken :: [Float] -> Float -> Tile -> Tile
+darken rs s t =
+  let [c', m', y'] = Prelude.map (* tileDarkDecayRate) rs
+      (c, m, y, k) = colors t
+      mx0          = max 0
+  in  case k of
+        _ | k < 1 -> setColor (c, m, y, min 1 (k + tileDarkenRate * s)) t
+        _         -> setColor (mx0 (c - c'), mx0 (m - m'), mx0 (y - y'), k) t
 
 -- lightens a tile by decreasing its "key" value
-lighten :: Float -> Tile -> Tile
-lighten s t =
-  let (c, m, y, k) = colors t
-  in  setColor (c, m, y, max 0 (k - tileLightenRate * s)) t
+-- if a tile is fully lightened, it starts gaining cmy
+lighten :: [Float] -> Float -> Tile -> Tile
+lighten rs s t =
+  let [c', m', y'] = Prelude.map (* tileLightGrowRate) rs
+      (c, m, y, k) = colors t
+      mn1          = min 1
+  in  case k of
+        _ | k > 0 -> setColor (c, m, y, max 0 (k - tileLightenRate * s)) t
+        _         -> setColor (mn1 (c + c'), mn1 (m + m'), mn1 (y + y'), 0) t
 
 -- inserts a tile into a tilemap (replaces if already exists)
 replace :: Tile -> TileMap -> TileMap
