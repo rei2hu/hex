@@ -18,7 +18,6 @@ drawing g =
   let
     positions    = getTiles g
     ts = map (\(co, c) -> (color c . polygon . hexagonAt) co) positions
-    outlines = map (\(co, _) -> (color white . line . hexagonAt) co) positions
     plp@(px, py) = (P.pos . G.player) g
     pl           = (color red . line . selectorAt) plp
     o            = overlay g
@@ -28,7 +27,7 @@ drawing g =
   in
     return $ pictures
       [ translate (fromIntegral px * shftH) (fromIntegral py * shftV)
-        $ pictures (pl : ts ++ outlines)
+        $ pictures (pl : ts)
       , o
       ]
 

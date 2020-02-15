@@ -17,6 +17,8 @@ playerBleedRate = 0.1 -- rate at which the player bleeds
 playerBarfThreshold = 0.5 -- amount of cmy player needs to barf
 
 overlayBarHeight, overlayBarWidth, overlayBarPadding :: Float
+overlayPosition :: (Int, Int)
+overlayPosition = (10, 0)
 overlayBarWidth = 20 -- width of the cmy bars on the overlay
 --
 overlayBarPadding = overlayBarWidth / 4

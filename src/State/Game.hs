@@ -88,14 +88,8 @@ playerAdvance steps g@Game { tiles = ts, player = pl } =
 
 -- advances the map aspects of the game
 mapAdvance :: Float -> Game -> Game
-mapAdvance steps g@Game { tiles = ts } = setTiles
-  (M.map
-    (\t ->
-      let dts = fromIntegral $ T.numDarkNghbrs ts t
+mapAdvance steps g@Game { tiles = ts } =
+  setTiles (M.map
       -- darken rate is based on number of dark neighbors and
       -- number of revealed light tiles and some random scaling
-      in  T.advance dts steps t
-    )
-    ts
-  )
-  g
+                  (T.advance ts steps) ts) g

@@ -4,6 +4,10 @@ import           Graphics.Gloss.Data.Picture
 import           Util.Positioning
 import           Util.Config
 
+-- draws a number at a position
+drawNumbers :: OffsetCoords -> Int -> Picture
+drawNumbers (x, y) = pictures . map (\(i, c) -> (line . drawNumber (x + i, y)) c) . zip [1 ..] . show
+
 -- draw a number centered at a position
 -- warning on auto-formatting this file
 drawNumber :: OffsetCoords -> Char -> Path

@@ -22,15 +22,22 @@ isLight :: Tile -> Bool
 isLight Tile { colors = (_, _, _, k) } = k < tileLightThreshold
 
 -- advances a tile (either lightens or darknes it)
-advance :: Int -> Float -> Tile -> Tile
-advance dts s t@Tile { colors = (c, m, y, _) } =
+advance :: TileMap -> Float -> Tile -> Tile
+advance ts s t@Tile { colors = (c, m, y, _) } =
   -- darken is scaled by number of dark neighbors
-  let s' = s * fromIntegral dts
+  let dts = fromIntegral $ numDarkNghbrs ts t
+      s'  = s * fromIntegral dts
   in  case (c, m, y) of
         -- if a tile is drained, then we both lighten and darken it
         (0, 0, 0) -> darken s' . lighten s $ t
         -- or else we just darken it
         _         -> darken s' t
+
+rate :: TileMap -> Tile -> Int
+rate ts t =
+  let dts = fromIntegral $ numDarkNghbrs ts t
+      r1  = dts * tileDarkenRate
+  in  round $ (tileLightenRate - r1) * 10000
 
 -- darkens a tile by increasing its "key" value
 darken :: Float -> Tile -> Tile
