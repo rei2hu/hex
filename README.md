@@ -2,7 +2,7 @@
 
 This is a simple game made as a learning project for Haskell. It's not very fleshed out, but
 maybe passable if it was an early era mobile game. You can find a reflection of the project
-[here](https://github.com/rei2hu/junk/blob/master/13.md)
+[here](https://reimu.ws/posts/11)
 
 #### About
 It's an endless type game where the goal is to attempt to maintain as many white tiles as
